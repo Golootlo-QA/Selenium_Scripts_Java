@@ -1,2 +1,2 @@
 # Selenium_Scripts_Java
-Necessary Scripts
+Necessary Scripts snippets
