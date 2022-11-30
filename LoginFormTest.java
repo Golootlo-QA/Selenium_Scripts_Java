@@ -4,37 +4,36 @@
 // Unirest is the recommended way to interact with RESTful APIs in Java
 // http://unirest.io/java.html
 
-// runs test against http://crossbrowsertesting.github.io/selenium_example_page.html
-
-
 import java.net.URL;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import junit.framework.Assert;
 
-import static org.junit.Assert.*;
 
-
-class BasicTest {
+class LoginFormTest {
 
     static String username = "user%40email.com"; // Your username
     static String authkey = "12345";  // Your authkey
     String testScore = "unset";
 
     public static void main(String[] args) throws Exception {
-        BasicTest myTest = new BasicTest();
+        LoginFormTest myTest = new LoginFormTest();
 
         DesiredCapabilities caps = new DesiredCapabilities();
 
-        caps.setCapability("name", "Basic Example");
+        caps.setCapability("name", "Login Form Example");
         caps.setCapability("build", "1.0");
-        caps.setCapability("browserName", "Chrome");    // By default this will request the latest version of Chrome
-        caps.setCapability("platform", "Windows 10");   // To specify version, you'll need setCapability("version", "whatever version"
+        caps.setCapability("browserName", "Chrome");            // request the latest version of chrome by default
+        caps.setCapability("platform", "Windows 10");           // To specify version, setCapability("version", "desired version")
         caps.setCapability("screen_resolution", "1366x768");
         caps.setCapability("record_video", "true");
         caps.setCapability("record_network", "false");
@@ -49,15 +48,33 @@ class BasicTest {
 
             // load the page url
             System.out.println("Loading Url");
-            driver.get("http://crossbrowsertesting.github.io/selenium_example_page.html");
+            driver.get("http://crossbrowsertesting.github.io/login-form.html");
 
             // maximize the window - DESKTOPS ONLY
             //System.out.println("Maximizing window");
             //driver.manage().window().maximize();
 
-            // Check the page title (try changing to make the assertion fail!)
-            System.out.println("Checking title");
-            assertEquals(driver.getTitle(), "Selenium Test Example Page");
+            // complete a short login form
+            // first by entering the username
+            System.out.println("Entering username");
+            driver.findElementByName("username").sendKeys("tester@crossbrowsertesting.com");
+
+            // then by entering the password
+            System.out.println("Entering password");
+            driver.findElementByName("password").sendKeys("test123");
+
+            // then by clicking the login button
+            System.out.println("Logging in");
+            driver.findElementByCssSelector("div.form-actions > button").click();
+
+            // let's wait here to ensure the page has loaded completely
+            WebDriverWait wait = new WebDriverWait(driver, 10);
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@id=\"logged-in-message\"]/h2")));
+
+            // Let's assert that the welcome message is present on the page.
+            // if not, an exception will be raised and we'll set the score to fail in the catch block.
+            String welcomeMessage = driver.findElementByXPath("//*[@id=\"logged-in-message\"]/h2").getText();
+            Assert.assertEquals("Welcome tester@crossbrowsertesting.com", welcomeMessage);
 
             // if we get to this point, then all the assertions have passed
             // that means that we can set the score to pass in our system

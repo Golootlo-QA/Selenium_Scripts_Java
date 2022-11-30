@@ -4,37 +4,39 @@
 // Unirest is the recommended way to interact with RESTful APIs in Java
 // http://unirest.io/java.html
 
-// runs test against http://crossbrowsertesting.github.io/selenium_example_page.html
-
-
 import java.net.URL;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import junit.framework.Assert;
 
-import static org.junit.Assert.*;
 
-
-class BasicTest {
+class DragAndDropTest {
 
     static String username = "user%40email.com"; // Your username
     static String authkey = "12345";  // Your authkey
     String testScore = "unset";
 
     public static void main(String[] args) throws Exception {
-        BasicTest myTest = new BasicTest();
+        DragAndDropTest myTest = new DragAndDropTest();
 
         DesiredCapabilities caps = new DesiredCapabilities();
 
-        caps.setCapability("name", "Basic Example");
+        caps.setCapability("name", "Drag-and-Drop Example");
         caps.setCapability("build", "1.0");
-        caps.setCapability("browserName", "Chrome");    // By default this will request the latest version of Chrome
-        caps.setCapability("platform", "Windows 10");   // To specify version, you'll need setCapability("version", "whatever version"
+        caps.setCapability("browserName", "Chrome");        // requests the latest version of chrome by default
+        caps.setCapability("platform", "Windows 10");    // To specify version, setCapability("version", "desired version")
         caps.setCapability("screen_resolution", "1366x768");
         caps.setCapability("record_video", "true");
         caps.setCapability("record_network", "false");
@@ -47,17 +49,36 @@ class BasicTest {
         // we wrap the test in a try catch loop so we can log assert failures in our system
         try {
 
-            // load the page url
+
+
+        	// load the page url
             System.out.println("Loading Url");
-            driver.get("http://crossbrowsertesting.github.io/selenium_example_page.html");
+            driver.get("http://crossbrowsertesting.github.io/drag-and-drop.html");
 
             // maximize the window - DESKTOPS ONLY
             //System.out.println("Maximizing window");
             //driver.manage().window().maximize();
 
-            // Check the page title (try changing to make the assertion fail!)
-            System.out.println("Checking title");
-            assertEquals(driver.getTitle(), "Selenium Test Example Page");
+            // let's grab the first element
+            System.out.println("Grabbing the draggable element");
+            WebElement from = driver.findElementById("draggable");
+
+            // and then the second element
+            System.out.println("Grabbing the element to drag to");
+            WebElement to = driver.findElementById("droppable");
+
+            // Actions are used to perform the dragging process
+            // We'll click and hold draggable, move it to droppable, and release
+            Actions dragger = new Actions(driver);
+            Action dragAndDrop = dragger.clickAndHold(from)
+        						 .moveToElement(to)
+        						 .release()
+        						 .build();
+            dragAndDrop.perform();
+
+            // let's assert that the final state of the droppable element is what we want.
+            String droppableText = driver.findElementByXPath("//*[@id=\"droppable\"]/p").getText();
+            Assert.assertEquals("Dropped!", droppableText);
 
             // if we get to this point, then all the assertions have passed
             // that means that we can set the score to pass in our system
